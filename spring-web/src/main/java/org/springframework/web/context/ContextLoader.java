@@ -140,6 +140,7 @@ public class ContextLoader {
 
 	private static final Properties defaultStrategies;
 
+	// 加载spring容器策略，默认使用XmlWebApplicationContext，允许通过参数contextClass进行订制化
 	static {
 		// Load default strategy implementations from properties file.
 		// This is currently strictly internal and not meant to be customized
@@ -301,6 +302,7 @@ public class ContextLoader {
 						ApplicationContext parent = loadParentContext(servletContext);
 						cwac.setParent(parent);
 					}
+					// 实现WebApplication初始化功能 代码太多，看起来比较费劲
 					configureAndRefreshWebApplicationContext(cwac, servletContext);
 				}
 			}
@@ -349,7 +351,7 @@ public class ContextLoader {
 	 */
 	protected WebApplicationContext createWebApplicationContext(ServletContext sc) {
 		Class<?> contextClass = determineContextClass(sc);
-		if (!ConfigurableWebApplicationContext.class.isAssignableFrom(contextClass)) {
+		if (!ConfigurableWebApplicationContext.class.isAssignableFrom(contextClass)) { // 订制化WebApplication必须是ConfigurableWebApplicationContext的子接口或者实现
 			throw new ApplicationContextException("Custom context class [" + contextClass.getName() +
 					"] is not of type [" + ConfigurableWebApplicationContext.class.getName() + "]");
 		}
@@ -357,6 +359,8 @@ public class ContextLoader {
 	}
 
 	/**
+	 * WebApplicationContext 策略
+	 * <p>
 	 * Return the WebApplicationContext implementation class to use, either the
 	 * default XmlWebApplicationContext or a custom context class if specified.
 	 *
@@ -367,14 +371,14 @@ public class ContextLoader {
 	 */
 	protected Class<?> determineContextClass(ServletContext servletContext) {
 		String contextClassName = servletContext.getInitParameter(CONTEXT_CLASS_PARAM);
-		if (contextClassName != null) {
+		if (contextClassName != null) { // 使用自定义策略
 			try {
 				return ClassUtils.forName(contextClassName, ClassUtils.getDefaultClassLoader());
 			} catch (ClassNotFoundException ex) {
 				throw new ApplicationContextException(
 						"Failed to load custom context class [" + contextClassName + "]", ex);
 			}
-		} else {
+		} else { // 使用默认策略
 			contextClassName = defaultStrategies.getProperty(WebApplicationContext.class.getName());
 			try {
 				return ClassUtils.forName(contextClassName, ContextLoader.class.getClassLoader());
@@ -385,6 +389,16 @@ public class ContextLoader {
 		}
 	}
 
+	/**
+	 * 初始化WebApplication
+	 * <p>
+	 * 设置容器id，允许自定义容器id
+	 * <p>
+	 * 读取spring配置文件路径参数contextConfigLocation
+	 *
+	 * @param wac 自定义WebApplicationContext,实际上是默认的XmlWebApplication
+	 * @param sc  servletContext
+	 */
 	protected void configureAndRefreshWebApplicationContext(ConfigurableWebApplicationContext wac, ServletContext sc) {
 		if (ObjectUtils.identityToString(wac).equals(wac.getId())) {
 			// The application context id is still set to its original default value
