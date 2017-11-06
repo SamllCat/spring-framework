@@ -548,14 +548,31 @@ public class DispatcherServlet extends FrameworkServlet {
 	 * <p>May be overridden in subclasses in order to initialize further strategy objects.
 	 */
 	protected void initStrategies(ApplicationContext context) {
+		// 文件请求解析器
 		initMultipartResolver(context);
+
+		// 本地化解析器
 		initLocaleResolver(context);
+
+		// 主体解析器
 		initThemeResolver(context);
+
+		// 初始化执行链
 		initHandlerMappings(context);
+
+		// 初始化执行适配器
 		initHandlerAdapters(context);
+
+		// 异常解析器
 		initHandlerExceptionResolvers(context);
+
+		// ???
 		initRequestToViewNameTranslator(context);
+
+		// 师徒解析器
 		initViewResolvers(context);
+
+		// 流媒体解析器
 		initFlashMapManager(context);
 	}
 
@@ -939,7 +956,9 @@ public class DispatcherServlet extends FrameworkServlet {
 
 		// Make framework objects available to handlers and view objects.
 		request.setAttribute(WEB_APPLICATION_CONTEXT_ATTRIBUTE, getWebApplicationContext());
+		// spring-mvc国际化支持
 		request.setAttribute(LOCALE_RESOLVER_ATTRIBUTE, this.localeResolver);
+
 		request.setAttribute(THEME_RESOLVER_ATTRIBUTE, this.themeResolver);
 		request.setAttribute(THEME_SOURCE_ATTRIBUTE, getThemeSource());
 
@@ -953,6 +972,7 @@ public class DispatcherServlet extends FrameworkServlet {
 		}
 
 		try {
+			// 分发前段请求
 			doDispatch(request, response);
 		} finally {
 			if (!WebAsyncUtils.getAsyncManager(request).isConcurrentHandlingStarted()) {
@@ -988,11 +1008,11 @@ public class DispatcherServlet extends FrameworkServlet {
 			Exception dispatchException = null;
 
 			try {
-				// 请求类型是否为文件类型
+				// 检查请求是否为multipart（例如文件上传），如果是则通过MultipartResolver解析
 				processedRequest = checkMultipart(request);
 				multipartRequestParsed = (processedRequest != request);
 
-				// 查找执行链，包括Handler、Interceptor
+				// 请求到处理器（页面控制器）的映射，通过HandlerMapping映射
 				// Determine handler for the current request.
 				mappedHandler = getHandler(processedRequest);
 				if (mappedHandler == null) {
@@ -1022,6 +1042,7 @@ public class DispatcherServlet extends FrameworkServlet {
 					return;
 				}
 
+				// 处理请求（Controller入口）
 				// Actually invoke the handler.
 				mv = ha.handle(processedRequest, response, mappedHandler.getHandler());
 

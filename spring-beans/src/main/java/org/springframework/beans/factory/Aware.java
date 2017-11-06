@@ -23,7 +23,7 @@ package org.springframework.beans.factory;
  * determined by individual subinterfaces, but should typically
  * consist of just one void-returning method that accepts a single
  * argument.
- *
+ * <p>
  * <p>Note that merely implementing {@link Aware} provides no default
  * functionality. Rather, processing must be done explicitly, for example
  * in a {@link org.springframework.beans.factory.config.BeanPostProcessor BeanPostProcessor}.
